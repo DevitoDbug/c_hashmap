@@ -43,34 +43,33 @@ Map *mapNew() {
     return map;
 }
 
-void mapSet(Map *map, int key, int value) {
+bool mapSet(Map *map, int key, int value) {
     if (map == NULL) {
         printf("invalid map passed. Map is NULL");
-        return;
+        return false;
     }
 
     int hash_val = hash(key);
     Node *current = map->entries[hash_val];
     Node *prev = NULL;
 
-    // When the linked list is empty
     if (current == NULL) {
         Node *new_entry = malloc(sizeof(Node));
         if (new_entry == NULL) {
             printf("failed to allocate memory for all the entries");
-            return;
+            return false;
         }
         new_entry->value = value;
         new_entry->key = key;
         new_entry->next = NULL;
         map->entries[hash_val] = new_entry;
-        return;
+        return true;
     }
 
     while (current != NULL) {
         if (current->key == key) {
             current->value = value;
-            return;
+            return true;
         }
         prev = current;
         current = current->next;
@@ -81,12 +80,14 @@ void mapSet(Map *map, int key, int value) {
     Node *new_entry = malloc(sizeof(Node));
     if (new_entry == NULL) {
         printf("failed to allocate memory for all the entries");
-        return;
+        return false;
     }
     new_entry->value = value;
     new_entry->key = key;
     new_entry->next = NULL;
     prev->next = new_entry;
+
+    return true;
 }
 
 bool mapGet(Map *map, int key, int *value) {
@@ -143,6 +144,11 @@ void mapFree(Map *map) {
 
     free(map);
 }
+
+// TODO:
+//  - Deleting
+//  - Resizing
+//  - Generic values
 
 int main() {
     Map *map = mapNew();
