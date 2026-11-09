@@ -1,5 +1,5 @@
 run: 
-	clang -Wall -Wextra -o0 -g main.c -o out
+	clang -Wall -Wextra -fsanitize=address -o0 -g main.c -o out
 	./out
 
 .PHONY: run

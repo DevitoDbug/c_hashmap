@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,7 +14,6 @@ typedef struct Node {
 
 typedef struct {
         Node **entries;
-        int capacity;
 } Map;
 
 Map *mapNew(int capacity) {
@@ -26,13 +26,11 @@ Map *mapNew(int capacity) {
         printf("failed to allocate memory for the entries");
         return NULL;
     }
+
     for (int i = 0; i < capacity; i++) {
-        Node *entry = malloc(sizeof(Node));
-        if (entry == NULL) {
-            printf("failed to allocate memory for all the entries");
-            return NULL;
-        }
-        entries[i] = entry;
+        // It is easier to check for indexes that have no lists or rather no
+        // node
+        entries[i] = NULL;
     }
 
     Map *map = malloc(sizeof(Map));
@@ -41,38 +39,124 @@ Map *mapNew(int capacity) {
         return NULL;
     }
     map->entries = entries;
-    map->capacity = capacity;
 
     return map;
 }
 
-int mapGet(Map *map, int key) {
+void mapSet(Map *map, int key, int value) {
+    if (map == NULL) {
+        printf("invalid map passed. Map is NULL");
+        return;
+    }
+
+    int hash_val = hash(key);
+    Node *current = map->entries[hash_val];
+    Node *prev = NULL;
+
+    // When the linked list is empty
+    if (current == NULL) {
+        Node *new_entry = malloc(sizeof(Node));
+        if (new_entry == NULL) {
+            printf("failed to allocate memory for all the entries");
+            return;
+        }
+        new_entry->value = value;
+        new_entry->key = key;
+        new_entry->next = NULL;
+        map->entries[hash_val] = new_entry;
+        return;
+    }
+
+    while (current != NULL) {
+        if (current->key == key) {
+            current->value = value;
+            return;
+        }
+        prev = current;
+        current = current->next;
+    }
+
+    // No key found with that value
+    // At this point the assumption is prev can not be NULL
+    Node *new_entry = malloc(sizeof(Node));
+    if (new_entry == NULL) {
+        printf("failed to allocate memory for all the entries");
+        return;
+    }
+    new_entry->value = value;
+    new_entry->key = key;
+    new_entry->next = NULL;
+    prev->next = new_entry;
+}
+
+bool mapGet(Map *map, int key, int *value) {
+    if (map == NULL) {
+        printf("invalid map instance. Map is set to NULL");
+        return false;
+    }
+
     int hash_val = hash(key);
     Node **nodes = map->entries;
     if (nodes == NULL) {
-        printf("invalid Map, entries not initialized");
+        printf("invalid Map, entries not initialized \n");
         // I think ideally we would want to crash the project at this point
-        return -1;
+        return false;
     }
 
-    if (hash_val >= map->capacity) {
-        printf("invalid node index, index larger than map capacity");
-        return -1;
+    if (hash_val >= TABLE_SIZE) {
+        printf("invalid node index, index larger than map capacity\n");
+        return false;
     }
 
     Node *current = nodes[hash_val];
     while (current != NULL) {
         if (key == current->key) {
-            return current->value;
+            *value = current->value;
+            return true;
         }
         current = current->next;
     }
 
-    return -1;
+    return false;
+}
+
+void mapFree(Map *map) {
+    if (map == NULL) {
+        printf("Map is empty");
+        return;
+    }
+
+    if (map->entries != NULL) {
+        for (int i = 0; i < TABLE_SIZE; i++) {
+            Node *current = map->entries[i];
+
+            while (current != NULL) {
+                Node *next = current->next;
+                free(current);
+
+                current = next;
+            }
+        }
+
+        free(map->entries);
+    }
+
+    free(map);
 }
 
 int main() {
-    Map *map = mapNew(4);
+    Map *map = mapNew(TABLE_SIZE);
+    mapSet(map, 2, 10);
+    mapSet(map, 100, 9);
+    mapSet(map, 50, 3);
+    int val = -1;
+    mapGet(map, 2, &val);
+    printf("key: %d, value: %d\n", 2, val);
+    mapGet(map, 100, &val);
+    printf("key: %d, value: %d\n", 100, val);
+    mapGet(map, 50, &val);
+    printf("key: %d, value: %d\n", 50, val);
+    mapFree(map);
 
     return 0;
 }
