@@ -91,6 +91,9 @@ bool mapSet(Map *map, int key, int value) {
 }
 
 bool mapGet(Map *map, int key, int *value) {
+    // Reset value
+    *value = -1;
+
     if (map == NULL) {
         printf("invalid map instance. Map is set to NULL");
         return false;
@@ -115,6 +118,41 @@ bool mapGet(Map *map, int key, int *value) {
             *value = current->value;
             return true;
         }
+        current = current->next;
+    }
+
+    return false;
+}
+
+bool mapDelete(Map *map, int key) {
+    if (map == NULL) {
+        printf("invalid map instance. Map is set to NULL");
+        return false;
+    }
+
+    int hash_val = hash(key);
+    Node *current = map->entries[hash_val];
+    Node *prev = NULL;
+
+    while (current != NULL) {
+        if (current->key == key) {
+            Node *deleted = current;
+            if (prev == NULL) {
+                map->entries[hash_val] = current->next;
+
+                if (deleted != NULL) {
+                    free(deleted);
+                }
+                return true;
+            }
+            prev->next = current->next;
+            if (deleted != NULL) {
+                free(deleted);
+            }
+            return true;
+        }
+
+        prev = current;
         current = current->next;
     }
 
@@ -162,6 +200,10 @@ int main() {
     printf("key: %d, value: %d\n", 100, val);
     mapGet(map, 50, &val);
     printf("key: %d, value: %d\n", 50, val);
+
+    mapDelete(map, 100);
+    mapGet(map, 100, &val);
+    printf("after delete==>key: %d, value: %d\n", 100, val);
     mapFree(map);
 
     return 0;
