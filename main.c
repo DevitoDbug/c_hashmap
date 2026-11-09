@@ -2,12 +2,14 @@
 
 #define TABLE_SIZE 10
 
+int hash(int key) { return key % TABLE_SIZE; }
+
 typedef struct {
         int Key;
         int Value;
 } Entry;
 
-int hash(int key) { return key % TABLE_SIZE; }
+int mapGet(Entry *entries, int key) { return entries[hash(key)].Value; }
 
 int main() {
     Entry entries[TABLE_SIZE] = {0};
@@ -17,6 +19,5 @@ int main() {
     entries[hash(25)].Value = 42;
 
     // Retrieve  value
-    printf("key: %d, value: %d\n", entries[hash(25)].Key,
-           entries[hash(25)].Value);
+    printf("key: %d, value: %d\n", 25, mapGet(entries, 25));
 }
