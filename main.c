@@ -16,18 +16,18 @@ typedef struct {
         Node **entries;
 } Map;
 
-Map *mapNew(int capacity) {
-    if (capacity <= 0) {
+Map *mapNew() {
+    if (TABLE_SIZE <= 0) {
         return NULL;
     }
 
-    Node **entries = malloc(sizeof(Node *) * capacity);
+    Node **entries = malloc(sizeof(Node *) * TABLE_SIZE);
     if (entries == NULL) {
         printf("failed to allocate memory for the entries");
         return NULL;
     }
 
-    for (int i = 0; i < capacity; i++) {
+    for (int i = 0; i < TABLE_SIZE; i++) {
         // It is easier to check for indexes that have no lists or rather no
         // node
         entries[i] = NULL;
@@ -145,7 +145,7 @@ void mapFree(Map *map) {
 }
 
 int main() {
-    Map *map = mapNew(TABLE_SIZE);
+    Map *map = mapNew();
     mapSet(map, 2, 10);
     mapSet(map, 100, 9);
     mapSet(map, 50, 3);
